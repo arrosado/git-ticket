@@ -21,7 +21,7 @@ ISSUES = os.path.join(REPO, 'issues.json')
 ISSUE = os.path.join(REPO, 'issues/{issueid}.json')
 ISSUE_URL = os.path.join(REPO, 'issues/{issueid}')
 
-DATEFMT = "%Y-%m-%dT%H:%M:%S%Z"
+DATEFMT = "%Y/%m/%d %H:%M:%S +0000"
 
 def issues(params={}):
     cfg = config.parseconfig()
@@ -146,7 +146,10 @@ def users():
 def user(n):
     cfg = config.parseconfig()
     r = _request('get', USER.format(userid=n, **cfg))
-    return r['user']
+    if r:
+     return r['user']
+    else:
+     return  {'id':n, 'login':n, 'firstname':'unknown', 'lastname':'unknown'}
 
 
 @util.memoize
@@ -247,9 +250,13 @@ def _request(rtype, url, params={}, data=None, headers={}):
         r = getattr(requests, rtype)(url, data=data, params=params, headers=headers, auth=auth, verify=cfg['sslverify'])
     else:
         r = getattr(requests, rtype)(url, params=params, headers=headers, auth=auth, verify=cfg['sslverify'])
+
+    if r.status_code == 404:
+			return None
+
     if not 200 <= r.status_code < 300:
         raise requests.exceptions.HTTPError('[{0}] {1}'.format(r.status_code, r.url))
-    return r.json
+    return r.json()
 
 
 def _todatetime(dstr):
