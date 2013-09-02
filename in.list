@@ -1,0 +1,28 @@
+core.quotepath=false
+core.excludesfile=/Users/arielrosado/.gitignore_global
+core.editor=subl -w
+user.name=Ariel Rosado Rivera
+user.email=ariel_00720@yahoo.com
+color.ui=auto
+color.status=auto
+color.branch=auto
+push.default=matching
+diff.tool=vimdiff
+alias.history=log --all --graph --decorate --abbrev-commit --date=relative --pretty=oneline
+alias.co=checkout
+alias.ci=commit
+alias.rb=rebase
+alias.history1=log --graph --all --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(bold white)— %an%C(reset)%C(bold yellow)%d%C(reset)' --abbrev-commit --date=relative
+alias.history2=log --graph --all --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset)%C(bold yellow)%d%C(reset)%n''          %C(white)%s%C(reset) %C(bold white)— %an%C(reset)' --abbrev-commit
+alias.history3=!git history1
+core.repositoryformatversion=0
+core.filemode=true
+core.bare=false
+core.logallrefupdates=true
+core.precomposeunicode=false
+remote.origin.fetch=+refs/heads/*:refs/remotes/origin/*
+remote.origin.url=https://github.com/arrosado/git-ticket.git
+branch.master.remote=origin
+branch.master.merge=refs/heads/master
+branch.feature/cversion.remote=origin
+branch.feature/cversion.merge=refs/heads/feature/cversion
