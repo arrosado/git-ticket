@@ -1,0 +1,1 @@
+ticket.o: ticket.c
