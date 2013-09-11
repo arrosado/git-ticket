@@ -5,17 +5,18 @@
 #include "util.h"
 
 int main(int argc, char** argv) { 
-	printf("git-ticket working correctly.");
-	
-	Git *git;
 
-	git_initialize(git);
+	git_initialize();
 
-	git_getConfig(git, "user.name");
-	//if (git_getConfig(git, "user.name"))
-	//	printf("Username is %s", git_getConfig(git, "user.name"));
+	printf("\n");
 
-	git_dispose(git);
+	if (git_getConfig("user.name"))
+		printf("Username is %s\n", git_getConfig("user.name"));
+
+	if (git_getConfig("user.email"))
+		printf("User email is %s\n\n", git_getConfig("user.email"));
+
+	git_dispose();
 	
 	return 0;
 }

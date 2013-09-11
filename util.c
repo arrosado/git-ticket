@@ -3,13 +3,32 @@
 #include <string.h>
 #include "util.h"
 
+struct Node *head, *node;
+
 int string_indexof(char *str, char find) {
 	return strchr(str, find) - str;
 }
 
-void git_initialize(Git *git)
+struct Node *git_loadConfig(FILE *file) {
+	struct Node *list = NULL, **nextp = &list;
+	char buffer[1024];
+
+	while (fgets(buffer, sizeof buffer, file) != NULL) {
+		struct Node *node;
+
+		node = (Node*)malloc(sizeof(struct Node) + strlen(buffer) + 1);
+		node->key = strtok(strcpy((char*)(node+1), buffer), "=\r\n");
+		node->value = strtok(NULL, "\r\n");
+		node->next = NULL;
+		*nextp = node;
+		nextp = &node->next;
+	}
+
+	return list;
+}
+
+void git_initialize()
 {
-	git = (Git *)malloc(sizeof(struct Git) + sizeof(struct Node) * 4);
 	system("git config -l > in.list");
 
 	FILE *file;
@@ -17,37 +36,25 @@ void git_initialize(Git *git)
 
 	file = fopen("in.list", &mode);
 	assert(file != NULL);
-	git_loadConfig(git, file);
+	head = git_loadConfig(file);
 	fclose(file);
 }
 
-void git_dispose(Git *git){
-	if (git != NULL)
-		free (git);
+void git_dispose(){
+	if (head != NULL)
+		free (head);
 }
 
-char *git_getConfig(Git *git, const char *key)
+char *git_getConfig(const char *key)
 {
-	for (git->node = git->head; git->node != NULL; git->node = git->node->next)
-		if (strcmp(git->node->key, key) ==  0)
-			return git->node->value;
+	for (node = head; node != NULL; node = node->next)
+		if (strcmp(node->key, key) ==  0)
+			return node->value;
 
 	return NULL;
 }
 
-struct Node *git_loadConfig(Git *git, FILE *file) {
-	git->list = NULL;
-	git->nextp = &git->list;
-	char buffer[1024];
-
-	while (fgets(buffer, sizeof buffer, file) != NULL) {
-		git->node = (Node*)malloc(sizeof(struct Node) + strlen(buffer) + 1);
-		git->node->key = strtok(strcpy((char*)(git->node+1), buffer), "=\r\n");
-		git->node->value = strtok(NULL, "\r\n");
-		git->node->next = NULL;
-		*(git->nextp) = git->node;
-		git->nextp = &(git->node->next);
-	}
-
-	return git->list;
+bool git_isInsideWorkTree()
+{
+	system("git rev-parse --is-inside-work-tree")
 }

@@ -13,21 +13,13 @@ struct Node
 	struct Node *next;
 };
 
-struct Git
-{
-	struct Node *head, 
-				*node,
-				*list,
-				**nextp;
-};
+void git_initialize();
 
-void git_initialize(Git *git);
+char *git_getConfig(const char *key);
 
-char *git_getConfig(Git *git, const char *key);
+void git_dispose();
 
-void git_dispose(Git *git);
-
-struct Node *git_loadConfig(Git *git, FILE *file);
+struct Node *git_loadConfig(FILE *file);
 
 int string_indexof(char *str, char find);
 
