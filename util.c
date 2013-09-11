@@ -9,7 +9,7 @@ int string_indexof(char *str, char find) {
 
 void git_initialize(Git *git)
 {
-	git = (Git *)malloc(sizeof(struct Git));
+	git = (Git *)malloc(sizeof(struct Git) + sizeof(struct Node) * 4);
 	system("git config -l > in.list");
 
 	FILE *file;
@@ -22,9 +22,6 @@ void git_initialize(Git *git)
 }
 
 void git_dispose(Git *git){
-	if (git->head != NULL)
-		free (git->head);
-
 	if (git != NULL)
 		free (git);
 }
@@ -44,8 +41,6 @@ struct Node *git_loadConfig(Git *git, FILE *file) {
 	char buffer[1024];
 
 	while (fgets(buffer, sizeof buffer, file) != NULL) {
-		git->node;
-
 		git->node = (Node*)malloc(sizeof(struct Node) + strlen(buffer) + 1);
 		git->node->key = strtok(strcpy((char*)(git->node+1), buffer), "=\r\n");
 		git->node->value = strtok(NULL, "\r\n");
