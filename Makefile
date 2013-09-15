@@ -26,4 +26,4 @@ example1-2: example1-2.o example1-2.c
 	$(CC) $(FRAMEWORK) $(CFLAGS) -o $@.exe $(LIBPATH) $@.c $(LIBRARIES)
 
 clean: 
-	rm -rf $(OUTPATH)*.o $(OUTPATH)git-ticket *.o *.d
+	rm -rf $(OUTPATH)*.o $(OUTPATH)git-ticket $(OUTPATH)in.* *.o *.d in.*
