@@ -56,5 +56,19 @@ char *git_getConfig(const char *key)
 
 bool git_isInsideWorkTree()
 {
-	system("git rev-parse --is-inside-work-tree")
+	system("git rev-parse --is-inside-work-tree > in.states");
+
+	FILE *file;
+	char mode = 'r';
+	char buffer[255];
+
+	file = fopen("in.states", &mode);
+
+	assert(file != NULL);
+
+	assert(fgets(buffer, sizeof buffer, file) != NULL);
+
+	fclose(file);
+
+	return strcmp(buffer, "true") == 0;
 }

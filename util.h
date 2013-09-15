@@ -21,6 +21,8 @@ void git_dispose();
 
 struct Node *git_loadConfig(FILE *file);
 
+bool git_isInsideWorkTree();
+
 int string_indexof(char *str, char find);
 
 #endif
