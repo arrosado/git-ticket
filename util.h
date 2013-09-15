@@ -25,4 +25,6 @@ bool git_isInsideWorkTree();
 
 int string_indexof(char *str, char find);
 
+char **git_branches();
+
 #endif

@@ -72,3 +72,55 @@ bool git_isInsideWorkTree()
 
 	return (strcmp(buffer, "true\n") == 0);
 }
+
+char **git_branches()
+{
+	system("git branch > in.branches && cat in.branches | wc -l > in.branchcount");
+
+	FILE *file;
+	char mode = 'r';
+	char **branches;
+	char buffer[255];
+	int branchCount = 0;
+	int i = 0;
+
+	// Read the number of branches on the repo.
+	// Set the number of branches into branch count.
+	file = fopen("in.branchcount", &mode);
+
+	assert(fgets(buffer, sizeof buffer, file) != NULL);
+
+	branchCount = atoi(buffer);
+
+	fclose(file);
+
+
+	// Read the branch names using the branch count.
+	file = fopen("in.branches", &mode);
+
+	assert(file != NULL);
+
+	branches = (char**)malloc(sizeof(char) * (branchCount+1));
+
+	for (i = 0; i < branchCount; i++)
+	{
+		assert(fgets(buffer, sizeof buffer, file) != NULL);
+		branches[i] = (char*)malloc(sizeof(char) * strlen(buffer) + 1);
+		// Start copying from index 2 on, 
+		// this will avoid coping the * mark 
+		// that git adds to identify the current 
+		// branch.
+		// Also avoid copying the \n character 
+		// that exists at the end of each line.
+		//
+		strncpy(branches[i], buffer+2, strlen(buffer) - 3);
+	}
+
+	fclose(file);
+
+	branches[branchCount] = NULL;
+	
+	return branches;
+}
+
+
