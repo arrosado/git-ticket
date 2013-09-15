@@ -27,4 +27,6 @@ int string_indexof(char *str, char find);
 
 char **git_branches();
 
+char *git_dir();
+
 #endif

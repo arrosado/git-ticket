@@ -28,6 +28,7 @@ int main(int argc, char** argv) {
 	while((branch = branches[i++]) != NULL)
 		printf("%s\n", branch);
 
+	printf("git dir is %s\n", git_dir());
 
 	git_dispose();
 	

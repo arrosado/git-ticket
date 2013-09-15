@@ -123,4 +123,26 @@ char **git_branches()
 	return branches;
 }
 
+char *git_dir() {
+	system("git rev-parse -q --git-dir > in.gitdir");
+
+	FILE *file;
+	char mode = 'r';
+	char buffer[255];
+	char *dir;
+
+	file = fopen("in.gitdir", &mode);
+
+	assert(file != NULL);
+
+	assert(fgets(buffer, sizeof buffer, file) != NULL);
+
+	dir = (char*)malloc(sizeof(char) * strlen(buffer) + 1);
+
+	strcpy(dir, buffer);
+
+	fclose(file);
+
+	return dir;
+}
 
