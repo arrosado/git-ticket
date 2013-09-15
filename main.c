@@ -30,6 +30,25 @@ int main(int argc, char** argv) {
 
 	printf("git dir is %s\n", git_dir());
 
+	GitTicketConfig *config = git_parseConfig(true);
+	//git_parseConfig(true);
+	printf("Ticketing system configurations: \n");
+
+	printf("ticket.name: %s\n", config->name);
+	printf("ticket.repo: %s\n", config->repo);
+	printf("ticket.service: %s\n", config->service);
+	printf("ticket.ssl: %d\n", config->ssl);
+	printf("ticket.format.list: %s\n", config->format_list);
+	printf("ticket.format.show: %s\n", config->format_show);
+	printf("ticket.format.comment: %s\n", config->format_comment);
+	printf("ticket.github.token: %s\n", config->gtoken);
+	printf("ticket.bitbucket.token: %s\n", config->btoken);
+	printf("ticket.bitbucket.token-secret: %s\n", config->btoken_secret);
+	printf("ticket.redmine.url: %s\n", config->rurl);
+	printf("ticket.redmine.password: %s\n", config->rpassword);
+	printf("ticket.redmine.token: %s\n", config->rtoken);
+
+
 	git_dispose();
 	
 	return 0;

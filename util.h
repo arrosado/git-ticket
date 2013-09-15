@@ -13,6 +13,35 @@ struct Node
 	struct Node *next;
 };
 
+struct GitTicketConfig 
+{
+	// Basic information.
+	char *name;
+	char *repo;
+	char *service;
+
+	// SSL.
+	bool ssl;
+
+	// List and show formatting.
+	char *format_list;
+	char *format_show;
+	char *format_comment;
+
+	// Github specific.
+	char *gtoken;
+
+	// Bitbucket specific.
+	char *btoken;
+	char *btoken_secret;
+
+	// Redmine specific.
+	char *rurl;
+	char *rpassword;
+	char *rtoken;
+
+};
+
 void git_initialize();
 
 char *git_getConfig(const char *key);
@@ -28,5 +57,7 @@ int string_indexof(char *str, char find);
 char **git_branches();
 
 char *git_dir();
+
+GitTicketConfig *git_parseConfig(bool doVerify);
 
 #endif

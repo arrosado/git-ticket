@@ -139,10 +139,69 @@ char *git_dir() {
 
 	dir = (char*)malloc(sizeof(char) * strlen(buffer) + 1);
 
-	strcpy(dir, buffer);
+	strncpy(dir, buffer, strlen(buffer) - 1);
 
 	fclose(file);
 
 	return dir;
+}
+
+GitTicketConfig *git_parseConfig(bool doVerify) {
+	GitTicketConfig *config = (GitTicketConfig*)malloc(sizeof(struct GitTicketConfig));
+
+	config->name = git_getConfig("ticket.name");
+	// ToDo: Add guess repo name routine if ticket.repo is null.
+	config->repo = git_getConfig("ticket.repo");
+	config->service = git_getConfig("ticket.service.name");
+	
+	char *httpssl = git_getConfig("ticket.ssl");
+	
+	if (httpssl)
+		config->ssl = strcmp(httpssl, "true") == 0;
+	
+	config->format_list = git_getConfig("ticket.format.list");
+	config->format_show = git_getConfig("ticket.format.show");
+	config->format_comment = git_getConfig("ticket.format.comment");
+	config->gtoken = git_getConfig("ticket.github.token");
+	config->btoken = git_getConfig("ticket.bitbucket.token");
+	config->btoken_secret = git_getConfig("ticket.bitbucket.token-secret");
+	config->rurl = git_getConfig("ticket.redmine.url");
+	config->rpassword = git_getConfig("ticket.redmine.password");
+	config->rtoken = git_getConfig("ticket.redmine.token");
+
+	if (doVerify)
+	{
+		if (config->service == NULL) {
+			printf("Can't guess a service. Try 'git config ticket.service [github|bitbucket|redmine]'\n");
+			exit(1);
+		}
+
+		if (((strcmp(config->service, "github") == 0) ||
+			 (strcmp(config->service, "bitbucket") == 0) ||
+			 (strcmp(config->service, "redmine") == 0)) == 0)
+		{
+			printf("%s is a unknown service. You must choose a service from github, bitbucket, and redmine.\n", config->service);
+			exit(1);
+		}
+
+		if (config->repo == NULL) {
+			printf("Can't guess a repository name. Try 'git config ticket.repo <repository_name>'\n");
+			exit(1);
+		}
+
+		if (config->name == NULL) {
+			printf("You must set your account name to ticket.name or user.name. Try 'git config ticket.name <your_account_name>'\n");
+			exit(1);
+		}
+
+		if (config->service && 
+			strcmp(config->service, "redmine") == 0 &&
+			config->rurl == NULL) {
+			printf("You must set a URL of your redmine. Try 'git config ticket.redmine.url <redmine_url>'\n");
+			exit(1);
+		}
+	}
+
+	return config;
 }
 
