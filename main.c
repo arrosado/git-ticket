@@ -14,7 +14,10 @@ int main(int argc, char** argv) {
 		printf("Username is %s\n", git_getConfig("user.name"));
 
 	if (git_getConfig("user.email"))
-		printf("User email is %s\n\n", git_getConfig("user.email"));
+		printf("User email is %s\n", git_getConfig("user.email"));
+
+	if (git_isInsideWorkTree())
+		printf("Is in working tree\n\n");	
 
 	git_dispose();
 	

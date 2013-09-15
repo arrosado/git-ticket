@@ -70,5 +70,5 @@ bool git_isInsideWorkTree()
 
 	fclose(file);
 
-	return strcmp(buffer, "true") == 0;
+	return (strcmp(buffer, "true\n") == 0);
 }
