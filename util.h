@@ -60,4 +60,10 @@ char *git_dir();
 
 GitTicketConfig *git_parseConfig(bool doVerify);
 
+char *git_guess_service();
+
+char *git_guess_repo_name();
+
+bool isurl(char *url);
+
 #endif

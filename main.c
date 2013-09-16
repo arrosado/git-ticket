@@ -30,9 +30,10 @@ int main(int argc, char** argv) {
 
 	printf("git dir is %s\n", git_dir());
 
-	GitTicketConfig *config = git_parseConfig(true);
-	//git_parseConfig(true);
 	printf("Ticketing system configurations: \n");
+
+	
+	GitTicketConfig *config = git_parseConfig(true);
 
 	printf("ticket.name: %s\n", config->name);
 	printf("ticket.repo: %s\n", config->repo);
@@ -48,6 +49,8 @@ int main(int argc, char** argv) {
 	printf("ticket.redmine.password: %s\n", config->rpassword);
 	printf("ticket.redmine.token: %s\n", config->rtoken);
 
+	printf("repo name : %s\n", git_guess_repo_name());
+	printf("service name : %s\n", git_guess_service());
 
 	git_dispose();
 	

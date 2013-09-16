@@ -150,10 +150,9 @@ GitTicketConfig *git_parseConfig(bool doVerify) {
 	GitTicketConfig *config = (GitTicketConfig*)malloc(sizeof(struct GitTicketConfig));
 
 	config->name = git_getConfig("ticket.name");
-	// ToDo: Add guess repo name routine if ticket.repo is null.
-	config->repo = git_getConfig("ticket.repo");
-	config->service = git_getConfig("ticket.service.name");
-	
+	config->repo = (git_getConfig("ticket.repo")) ? git_getConfig("ticket.repo") : git_guess_repo_name();
+	config->service = (git_getConfig("ticket.service")) ? git_getConfig("ticket.service") : git_guess_service();
+
 	char *httpssl = git_getConfig("ticket.ssl");
 	
 	if (httpssl)
@@ -203,5 +202,104 @@ GitTicketConfig *git_parseConfig(bool doVerify) {
 	}
 
 	return config;
+}
+
+bool isurl(char *url) {
+	return (strstr(url, "://") != NULL);
+}
+
+char *git_guess_repo_name()
+{
+	char *origin_url = git_getConfig("remote.origin.url");
+
+	char *url = (char*)malloc(sizeof(char) * (strlen(origin_url) + 1));
+
+	strcpy(url, origin_url);
+
+	if (!url) 
+		return NULL;
+
+	char *repo_name = NULL;
+	char *temp_name = strtok(url, "/");
+
+	while ((temp_name = strtok(NULL, "/")) != NULL) 
+		repo_name = temp_name;
+
+	if (repo_name != NULL){
+		free(url);
+		return repo_name;
+	}
+
+	temp_name = strtok(url, ":");
+
+	while ((temp_name = strtok(NULL, ":")) != NULL) 
+		repo_name = temp_name;
+
+	free(url);
+
+	return repo_name;
+}
+
+char *git_guess_service() {
+	char *origin_url = git_getConfig("remote.origin.url");
+
+	char *url = (char*)malloc(sizeof(char) * (strlen(origin_url) + 1));
+
+	strcpy(url, origin_url);
+
+	if (!url) 
+		return NULL;
+
+	char *github = (char*)malloc(sizeof(char) * 7);
+	strcpy(github, "github");
+
+	char *bitbucket = (char*)malloc(sizeof(char) * 10);
+	strcpy(bitbucket, "bitbucket");
+
+	char *redmine = (char*)malloc(sizeof(char) * 8);
+	strcpy(redmine, "redmine");
+
+	char *value = NULL;
+
+	value = strtok(url, "/");
+	while ((value = strtok(NULL, "/")) != NULL) {
+		if (strcmp(value, "github.com") == 0) {
+			free(url);
+			free(redmine);
+			free(bitbucket);
+			return github;
+		}
+		else if (strcmp(value, "bitbucket.org") == 0) {
+			free(url);
+			free(redmine);
+			free(github);
+			return bitbucket;
+		}
+		else if (strcmp(value, "mcs.redmine") == 0) {
+			free(url);
+			free(github);
+			free(bitbucket);
+			return redmine;
+		}
+	}
+
+	strcpy(url, origin_url);
+
+	value = strtok(url, "@");
+	while ((value = strtok(NULL, "@")) != NULL) {
+		if (strstr(value, "mcs.redmine") != NULL) {
+			free(url);
+			free(github);
+			free(bitbucket);
+			return redmine;
+		}
+	}
+
+	free(url);
+	free(github);
+	free(redmine);
+	free(bitbucket);
+
+	return NULL;
 }
 
