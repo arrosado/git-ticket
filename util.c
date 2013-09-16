@@ -149,7 +149,7 @@ char *git_dir() {
 GitTicketConfig *git_parseConfig(bool doVerify) {
 	GitTicketConfig *config = (GitTicketConfig*)malloc(sizeof(struct GitTicketConfig));
 
-	config->name = git_getConfig("ticket.name");
+	config->name = (git_getConfig("ticket.name")) ? git_getConfig("ticket.name") : git_getConfig("user.name");
 	config->repo = (git_getConfig("ticket.repo")) ? git_getConfig("ticket.repo") : git_guess_repo_name();
 	config->service = (git_getConfig("ticket.service")) ? git_getConfig("ticket.service") : git_guess_service();
 
