@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 #include "util.h"
@@ -102,3 +103,4 @@ char *inputWithEditor(char *string) {
 
 	return readFile(temp);
 }
+
