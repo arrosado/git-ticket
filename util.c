@@ -4,6 +4,11 @@
 #include <assert.h>
 #include "util.h"
 
+char *getGitEditor();
+void writeTemplate(char *fileName, char *string);
+char *readFile(char *fileName);
+void callEditor(char *editor, char *fileName);
+
 char *getGitEditor() {
 	system("git var GIT_EDITOR > in.giteditor");
 

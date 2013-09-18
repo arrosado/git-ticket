@@ -4,7 +4,7 @@
 #include <assert.h>
 #include "config.h"
 
-int main(int argc, char** argv) { 
+int main(void) { 
 
 	git_initialize();
 
