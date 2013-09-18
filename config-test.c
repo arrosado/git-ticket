@@ -4,6 +4,9 @@
 #include <assert.h>
 #include "config.h"
 
+#define TRUE 1
+#define FALSE 0
+
 int main(void) { 
 
 	git_initialize();
@@ -33,7 +36,7 @@ int main(void) {
 	printf("Ticketing system configurations: \n");
 
 	
-	GitTicketConfig *config = git_parseConfig(true);
+	struct GitTicketConfig *config = git_parseConfig(TRUE);
 
 	printf("ticket.name: %s\n", config->name);
 	printf("ticket.repo: %s\n", config->repo);

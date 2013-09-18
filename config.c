@@ -17,7 +17,7 @@ struct Node *git_loadConfig(FILE *file) {
 	while (fgets(buffer, sizeof buffer, file) != NULL) {
 		struct Node *node;
 
-		node = (Node*)malloc(sizeof(struct Node) + strlen(buffer) + 1);
+		node = (struct Node*)malloc(sizeof(struct Node) + strlen(buffer) + 1);
 		node->key = strtok(strcpy((char*)(node+1), buffer), "=\r\n");
 		node->value = strtok(NULL, "\r\n");
 		node->next = NULL;
@@ -28,8 +28,7 @@ struct Node *git_loadConfig(FILE *file) {
 	return list;
 }
 
-void git_initialize()
-{
+void git_initialize() {
 	system("git config -l > in.list");
 
 	FILE *file;
@@ -41,13 +40,12 @@ void git_initialize()
 	fclose(file);
 }
 
-void git_dispose(){
+void git_dispose() {
 	if (head != NULL)
 		free (head);
 }
 
-char *git_getConfig(const char *key)
-{
+char *git_getConfig(const char *key) {
 	for (node = head; node != NULL; node = node->next)
 		if (strcmp(node->key, key) ==  0)
 			return node->value;
@@ -55,8 +53,7 @@ char *git_getConfig(const char *key)
 	return NULL;
 }
 
-bool git_isInsideWorkTree()
-{
+int git_isInsideWorkTree() {
 	system("git rev-parse --is-inside-work-tree > in.states");
 
 	FILE *file;
@@ -74,8 +71,7 @@ bool git_isInsideWorkTree()
 	return (strcmp(buffer, "true\n") == 0);
 }
 
-char **git_branches()
-{
+char **git_branches() {
 	system("git branch > in.branches && cat in.branches | wc -l > in.branchcount");
 
 	FILE *file;
@@ -147,8 +143,8 @@ char *git_dir() {
 	return dir;
 }
 
-GitTicketConfig *git_parseConfig(bool doVerify) {
-	GitTicketConfig *config = (GitTicketConfig*)malloc(sizeof(struct GitTicketConfig));
+struct GitTicketConfig *git_parseConfig(int doVerify) {
+	struct GitTicketConfig *config = (struct GitTicketConfig*)malloc(sizeof(struct GitTicketConfig));
 
 	config->name = (git_getConfig("ticket.name")) ? git_getConfig("ticket.name") : git_getConfig("user.name");
 	config->repo = (git_getConfig("ticket.repo")) ? git_getConfig("ticket.repo") : git_guess_repo_name();
@@ -205,12 +201,11 @@ GitTicketConfig *git_parseConfig(bool doVerify) {
 	return config;
 }
 
-bool isurl(char *url) {
+int isurl(char *url) {
 	return (strstr(url, "://") != NULL);
 }
 
-char *git_guess_repo_name()
-{
+char *git_guess_repo_name() {
 	char *origin_url = git_getConfig("remote.origin.url");
 
 	char *url = (char*)malloc(sizeof(char) * (strlen(origin_url) + 1));

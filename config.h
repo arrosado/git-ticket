@@ -16,7 +16,7 @@ struct GitTicketConfig
 	char *service;
 
 	// SSL.
-	bool ssl;
+	int ssl;
 
 	// List and show formatting.
 	char *format_list;
@@ -37,28 +37,28 @@ struct GitTicketConfig
 
 };
 
-void git_initialize();
+void git_initialize(void);
 
 char *git_getConfig(const char *key);
 
-void git_dispose();
+void git_dispose(void);
 
 struct Node *git_loadConfig(FILE *file);
 
-bool git_isInsideWorkTree();
+int git_isInsideWorkTree(void);
 
 int string_indexof(char *str, char find);
 
-char **git_branches();
+char **git_branches(void);
 
-char *git_dir();
+char *git_dir(void);
 
-GitTicketConfig *git_parseConfig(bool doVerify);
+struct GitTicketConfig *git_parseConfig(int doVerify);
 
-char *git_guess_service();
+char *git_guess_service(void);
 
-char *git_guess_repo_name();
+char *git_guess_repo_name(void);
 
-bool isurl(char *url);
+int isurl(char *url);
 
 #endif

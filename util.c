@@ -4,7 +4,7 @@
 #include <assert.h>
 #include "util.h"
 
-char *getGitEditor();
+char *getGitEditor(void);
 void writeTemplate(char *fileName, char *string);
 char *readFile(char *fileName);
 void callEditor(char *editor, char *fileName);

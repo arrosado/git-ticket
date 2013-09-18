@@ -1,16 +1,17 @@
-LIBPATH += -L"/System/Library/Frameworks/OpenGL.framework/Libraries" 
+.PHONY: all
 
+LIBPATH += -L"/System/Library/Frameworks/OpenGL.framework/Libraries" 
 FRAMEWORK = -framework GLUT
 FRAMEWORK += -framework OpenGL
+LIBRARIES = -lGL -lGLU -lm -lobjc -lstdc++
 
 OUTPATH = build/
 OBJS = util.c cmd.c config.c ticket.c redmine.c 
-COMPILERFLAGS = -Wall
-CC = g++
+
+CC = gcc
 CFLAGS = -g -Wall -Ilibgit2/include -Ilibgit2/src -Wextra -Wmissing-prototypes -Wno-missing-field-initializers
 LFLAGS = -Llibgit2/build -lgit2 -lz
-LIBRARIES = -lGL -lGLU -lm -lobjc -lstdc++
-APPS = gitticket util-test config-test
+APPS = git-ticket util-test config-test
 
 all: $(APPS)
 
