@@ -1,49 +1,34 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-struct Node
-{
-	char *key;
-	char *value;
-	struct Node *next;
-};
-
-struct GitTicketConfig 
+struct git_ticket_config 
 {
 	// Basic information.
-	char *name;
-	char *repo;
-	char *service;
+	const char *name;
+	const char *repo;
+	const char *service;
 
 	// SSL.
 	int ssl;
 
 	// List and show formatting.
-	char *format_list;
-	char *format_show;
-	char *format_comment;
+	const char *format_list;
+	const char *format_show;
+	const char *format_comment;
 
 	// Github specific.
-	char *gtoken;
+	const char *gtoken;
 
 	// Bitbucket specific.
-	char *btoken;
-	char *btoken_secret;
+	const char *btoken;
+	const char *btoken_secret;
 
 	// Redmine specific.
-	char *rurl;
-	char *rpassword;
-	char *rtoken;
+	const char *rurl;
+	const char *rpassword;
+	const char *rtoken;
 
 };
-
-void git_initialize(void);
-
-char *git_getConfig(const char *key);
-
-void git_dispose(void);
-
-struct Node *git_loadConfig(FILE *file);
 
 int git_isInsideWorkTree(void);
 
@@ -53,7 +38,7 @@ char **git_branches(void);
 
 char *git_dir(void);
 
-struct GitTicketConfig *git_parseConfig(int doVerify);
+struct git_ticket_config *git_parseConfig(int doVerify);
 
 char *git_guess_service(void);
 

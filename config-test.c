@@ -9,34 +9,14 @@
 
 int main(void) { 
 
-	git_initialize();
-
 	printf("\n");
-
-	if (git_getConfig("user.name"))
-		printf("Username is %s\n", git_getConfig("user.name"));
-
-	if (git_getConfig("user.email"))
-		printf("User email is %s\n", git_getConfig("user.email"));
 
 	if (git_isInsideWorkTree())
 		printf("Is in working tree\n");	
 
-	printf("Available branches are :\n");
-
-	char **branches = git_branches();
-	
-	char *branch = NULL;
-	int i = 0;
-	while((branch = branches[i++]) != NULL)
-		printf("%s\n", branch);
-
-	printf("git dir is %s\n", git_dir());
-
 	printf("Ticketing system configurations: \n");
 
-	
-	struct GitTicketConfig *config = git_parseConfig(TRUE);
+	struct git_ticket_config *config = git_parseConfig(TRUE);
 
 	printf("ticket.name: %s\n", config->name);
 	printf("ticket.repo: %s\n", config->repo);
@@ -55,7 +35,5 @@ int main(void) {
 	printf("repo name : %s\n", git_guess_repo_name());
 	printf("service name : %s\n", git_guess_service());
 
-	git_dispose();
-	
 	return 0;
 }

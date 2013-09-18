@@ -2,55 +2,24 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <git2.h>
 #include "config.h"
-
-struct Node *head, *node;
 
 int string_indexof(char *str, char find) {
 	return strchr(str, find) - str;
 }
 
-struct Node *git_loadConfig(FILE *file) {
-	struct Node *list = NULL, **nextp = &list;
-	char buffer[1024];
+static void check_error(int error_code, const char *action)
+{
+	if (!error_code)
+		return;
 
-	while (fgets(buffer, sizeof buffer, file) != NULL) {
-		struct Node *node;
+	const git_error *error = giterr_last();
 
-		node = (struct Node*)malloc(sizeof(struct Node) + strlen(buffer) + 1);
-		node->key = strtok(strcpy((char*)(node+1), buffer), "=\r\n");
-		node->value = strtok(NULL, "\r\n");
-		node->next = NULL;
-		*nextp = node;
-		nextp = &node->next;
-	}
+	printf("Error %d %s - %s\n", error_code, action, 
+		(error && error->message) ? error->message : "???");
 
-	return list;
-}
-
-void git_initialize() {
-	system("git config -l > in.list");
-
-	FILE *file;
-	char mode = 'r';
-
-	file = fopen("in.list", &mode);
-	assert(file != NULL);
-	head = git_loadConfig(file);
-	fclose(file);
-}
-
-void git_dispose() {
-	if (head != NULL)
-		free (head);
-}
-
-char *git_getConfig(const char *key) {
-	for (node = head; node != NULL; node = node->next)
-		if (strcmp(node->key, key) ==  0)
-			return node->value;
-
-	return NULL;
+	exit(1);
 }
 
 int git_isInsideWorkTree() {
@@ -143,27 +112,50 @@ char *git_dir() {
 	return dir;
 }
 
-struct GitTicketConfig *git_parseConfig(int doVerify) {
-	struct GitTicketConfig *config = (struct GitTicketConfig*)malloc(sizeof(struct GitTicketConfig));
+struct git_ticket_config *git_parseConfig(int doVerify) {
+	struct git_ticket_config *config = (struct git_ticket_config*)malloc(sizeof(struct git_ticket_config));
 
-	config->name = (git_getConfig("ticket.name")) ? git_getConfig("ticket.name") : git_getConfig("user.name");
-	config->repo = (git_getConfig("ticket.repo")) ? git_getConfig("ticket.repo") : git_guess_repo_name();
-	config->service = (git_getConfig("ticket.service")) ? git_getConfig("ticket.service") : git_guess_service();
+	const char *repo_path = git_dir();
+	char config_path[256];
+	git_repository *repo;
+	git_config *local_cfg;
+	git_config *default_cfg;
+	//git_config *global_cfg;
 
-	char *httpssl = git_getConfig("ticket.ssl");
+	check_error(git_repository_open(&repo, repo_path), "opening repository");
+	sprintf(config_path, "%s/config", repo_path);
+
+	check_error(git_config_open_ondisk(&local_cfg, config_path), "opening local config file");
+	check_error(git_config_open_default(&default_cfg), "opening default config file");
+	//check_error(git_config_open_global(&global_cfg, global_cfg), "opening global file");
+
+	git_config_get_string(&config->name, local_cfg, "ticket.name");
+	if (!config->name)
+		git_config_get_string(&config->name, default_cfg, "user.name");
+
+	git_config_get_string(&config->repo, local_cfg, "ticket.repo");
+	if (!config->repo) 
+		config->repo = git_guess_repo_name();
+
+	git_config_get_string(&config->service, local_cfg, "ticket.service");
+	if (!config->service)
+		config->service = git_guess_service();
+
+	const char *httpssl;
+	git_config_get_string(&httpssl, local_cfg, "ticket.ssl");
 	
 	if (httpssl)
 		config->ssl = strcmp(httpssl, "true") == 0;
 	
-	config->format_list = git_getConfig("ticket.format.list");
-	config->format_show = git_getConfig("ticket.format.show");
-	config->format_comment = git_getConfig("ticket.format.comment");
-	config->gtoken = git_getConfig("ticket.github.token");
-	config->btoken = git_getConfig("ticket.bitbucket.token");
-	config->btoken_secret = git_getConfig("ticket.bitbucket.token-secret");
-	config->rurl = git_getConfig("ticket.redmine.url");
-	config->rpassword = git_getConfig("ticket.redmine.password");
-	config->rtoken = git_getConfig("ticket.redmine.token");
+	git_config_get_string(&config->format_list, local_cfg, "ticket.format.list");
+	git_config_get_string(&config->format_show, local_cfg, "ticket.format.show");
+	git_config_get_string(&config->format_comment, local_cfg, "ticket.format.comment");
+	git_config_get_string(&config->gtoken, local_cfg, "ticket.github.token");
+	git_config_get_string(&config->btoken, local_cfg, "ticket.bitbucket.token");
+	git_config_get_string(&config->btoken_secret, local_cfg, "ticket.bitbucket.token-secret");
+	git_config_get_string(&config->rurl, local_cfg, "ticket.redmine.url");
+	git_config_get_string(&config->rpassword, local_cfg, "ticket.redmine.password");
+	git_config_get_string(&config->rtoken, local_cfg, "ticket.redmine.token");
 
 	if (doVerify)
 	{
@@ -206,7 +198,22 @@ int isurl(char *url) {
 }
 
 char *git_guess_repo_name() {
-	char *origin_url = git_getConfig("remote.origin.url");
+	const char *origin_url;
+	const char *repo_path = git_dir();
+	char config_path[256];
+	git_repository *repo;
+	git_config *local_cfg;
+	git_config *default_cfg;
+	//git_config *global_cfg;
+
+	check_error(git_repository_open(&repo, repo_path), "opening repository");
+	sprintf(config_path, "%s/config", repo_path);
+
+	check_error(git_config_open_ondisk(&local_cfg, config_path), "opening local config file");
+	check_error(git_config_open_default(&default_cfg), "opening default config file");
+	//check_error(git_config_open_global(&global_cfg, global_cfg), "opening global file");
+
+	git_config_get_string(&origin_url, local_cfg, "remote.origin.url");
 
 	char *url = (char*)malloc(sizeof(char) * (strlen(origin_url) + 1));
 
@@ -237,7 +244,22 @@ char *git_guess_repo_name() {
 }
 
 char *git_guess_service() {
-	char *origin_url = git_getConfig("remote.origin.url");
+	const char *origin_url;
+	const char *repo_path = git_dir();
+	char config_path[256];
+	git_repository *repo;
+	git_config *local_cfg;
+	git_config *default_cfg;
+	//git_config *global_cfg;
+
+	check_error(git_repository_open(&repo, repo_path), "opening repository");
+	sprintf(config_path, "%s/config", repo_path);
+
+	check_error(git_config_open_ondisk(&local_cfg, config_path), "opening local config file");
+	check_error(git_config_open_default(&default_cfg), "opening default config file");
+	//check_error(git_config_open_global(&global_cfg, global_cfg), "opening global file");
+
+	git_config_get_string(&origin_url, local_cfg, "remote.origin.url");
 
 	char *url = (char*)malloc(sizeof(char) * (strlen(origin_url) + 1));
 
