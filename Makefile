@@ -5,11 +5,13 @@ FRAMEWORK = -framework GLUT
 FRAMEWORK += -framework OpenGL
 LIBRARIES = -lGL -lGLU -lm -lobjc -lstdc++
 
+PUBLIC = public/
+PRIVATE = private/
 OUTPATH = build/
-OBJS = util.c cmd.c config.c ticket.c redmine.c 
+OBJS = $(PRIVATE)util.c $(PRIVATE)cmd.c $(PRIVATE)config.c $(PRIVATE)ticket.c $(PRIVATE)redmine.c 
 
 CC = gcc
-CFLAGS = -g -Wall -Ilibgit2/include -Ilibgit2/src -Wextra -Wmissing-prototypes -Wno-missing-field-initializers
+CFLAGS = -g -Wall -Ilibgit2/include -I$(PUBLIC) -Ilibgit2/src -Wextra -Wmissing-prototypes -Wno-missing-field-initializers
 LFLAGS = -Llibgit2/build -lgit2 -lz
 APPS = git-ticket util-test config-test
 
