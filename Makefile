@@ -5,6 +5,12 @@ FRAMEWORK = -framework GLUT
 FRAMEWORK += -framework OpenGL
 LIBRARIES = -lGL -lGLU -lm -lobjc -lstdc++
 
+ifeq ($(OS), LINUX)
+POSTBUILD = ldconfig
+else
+POSTBUILD = 
+endif
+
 PUBLIC = public/
 PRIVATE = private/
 OUTPATH = build/
@@ -16,8 +22,9 @@ LFLAGS = -Llibgit2/build -lgit2 -lz
 APPS = git-ticket util-test config-test
 
 all: $(APPS)
+	$(POSTBUILD)
 
-% : %.c $(OBJS)
+% : $(PRIVATE)%.c $(OBJS)
 	$(CC) $(OBJS) -o $(OUTPATH)$@ $(CFLAGS) $< $(LFLAGS);
 	$(OUTPATH)$@
 

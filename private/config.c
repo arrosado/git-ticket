@@ -114,20 +114,16 @@ char *git_dir() {
 
 struct git_ticket_config *git_parseConfig(int doVerify) {
 	struct git_ticket_config *config = (struct git_ticket_config*)malloc(sizeof(struct git_ticket_config));
-
+	
 	const char *repo_path = git_dir();
 	char config_path[256];
-	git_repository *repo;
 	git_config *local_cfg;
 	git_config *default_cfg;
-	//git_config *global_cfg;
 
-	check_error(git_repository_open(&repo, repo_path), "opening repository");
 	sprintf(config_path, "%s/config", repo_path);
 
 	check_error(git_config_open_ondisk(&local_cfg, config_path), "opening local config file");
 	check_error(git_config_open_default(&default_cfg), "opening default config file");
-	//check_error(git_config_open_global(&global_cfg, global_cfg), "opening global file");
 
 	git_config_get_string(&config->name, local_cfg, "ticket.name");
 	if (!config->name)
@@ -143,10 +139,10 @@ struct git_ticket_config *git_parseConfig(int doVerify) {
 
 	const char *httpssl;
 	git_config_get_string(&httpssl, local_cfg, "ticket.ssl");
-	
+
 	if (httpssl)
 		config->ssl = strcmp(httpssl, "true") == 0;
-	
+
 	git_config_get_string(&config->format_list, local_cfg, "ticket.format.list");
 	git_config_get_string(&config->format_show, local_cfg, "ticket.format.show");
 	git_config_get_string(&config->format_comment, local_cfg, "ticket.format.comment");
@@ -201,20 +197,19 @@ char *git_guess_repo_name() {
 	const char *origin_url;
 	const char *repo_path = git_dir();
 	char config_path[256];
-	git_repository *repo;
 	git_config *local_cfg;
 	git_config *default_cfg;
-	//git_config *global_cfg;
 
-	check_error(git_repository_open(&repo, repo_path), "opening repository");
 	sprintf(config_path, "%s/config", repo_path);
 
 	check_error(git_config_open_ondisk(&local_cfg, config_path), "opening local config file");
 	check_error(git_config_open_default(&default_cfg), "opening default config file");
-	//check_error(git_config_open_global(&global_cfg, global_cfg), "opening global file");
 
 	git_config_get_string(&origin_url, local_cfg, "remote.origin.url");
 
+	if (!origin_url)
+		return NULL;
+printf("\n\n\nHere\n\n\n");
 	char *url = (char*)malloc(sizeof(char) * (strlen(origin_url) + 1));
 
 	strcpy(url, origin_url);
@@ -247,17 +242,13 @@ char *git_guess_service() {
 	const char *origin_url;
 	const char *repo_path = git_dir();
 	char config_path[256];
-	git_repository *repo;
 	git_config *local_cfg;
 	git_config *default_cfg;
-	//git_config *global_cfg;
 
-	check_error(git_repository_open(&repo, repo_path), "opening repository");
 	sprintf(config_path, "%s/config", repo_path);
 
 	check_error(git_config_open_ondisk(&local_cfg, config_path), "opening local config file");
 	check_error(git_config_open_default(&default_cfg), "opening default config file");
-	//check_error(git_config_open_global(&global_cfg, global_cfg), "opening global file");
 
 	git_config_get_string(&origin_url, local_cfg, "remote.origin.url");
 
