@@ -1,3 +1,4 @@
+#include "cmd.h" 
 
 void list(void * opts) {}
 void show(void * opts) {} 

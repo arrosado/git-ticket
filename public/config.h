@@ -38,6 +38,8 @@ char **git_branches(void);
 
 char *git_dir(void);
 
+void get_config(const char **string, const char *key, const char * altkey);
+
 struct git_ticket_config *git_parseConfig(int doVerify);
 
 char *git_guess_service(void);

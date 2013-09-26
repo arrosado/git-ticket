@@ -28,6 +28,9 @@ all: $(APPS)
 	$(CC) $(OBJS) -o $(OUTPATH)$@ $(CFLAGS) $< $(LFLAGS);
 	$(OUTPATH)$@
 
+test: $(APPS)
+	$(OUTPATH)$@
+
 clean: 
 	$(RM) $(OUTPATH)m$(APPS)
 	$(RM) -rf $(OUTPATH)*

@@ -112,9 +112,10 @@ char *git_dir() {
 	return dir;
 }
 
-struct git_ticket_config *git_parseConfig(int doVerify) {
-	struct git_ticket_config *config = (struct git_ticket_config*)malloc(sizeof(struct git_ticket_config));
-	
+void 
+get_config(const char **string, const char *key, const char * altkey)
+{
+	const char *string_empty = "";
 	const char *repo_path = git_dir();
 	char config_path[256];
 	git_config *local_cfg;
@@ -125,33 +126,40 @@ struct git_ticket_config *git_parseConfig(int doVerify) {
 	check_error(git_config_open_ondisk(&local_cfg, config_path), "opening local config file");
 	check_error(git_config_open_default(&default_cfg), "opening default config file");
 
-	git_config_get_string(&config->name, local_cfg, "ticket.name");
-	if (!config->name)
-		git_config_get_string(&config->name, default_cfg, "user.name");
+	if(git_config_get_string(string, local_cfg, key))
+		if (!altkey || git_config_get_string(string, default_cfg, altkey))
+			*string = string_empty;
+	
+	if (strcmp(key, "ticket.repo") == 0 && strcmp(*string, string_empty) == 0)
+		*string = git_guess_repo_name();
 
-	git_config_get_string(&config->repo, local_cfg, "ticket.repo");
-	if (!config->repo) 
-		config->repo = git_guess_repo_name();
+	if (strcmp(key, "ticket.service") == 0 && strcmp(*string, string_empty) == 0)
+		*string = git_guess_service();
 
-	git_config_get_string(&config->service, local_cfg, "ticket.service");
-	if (!config->service)
-		config->service = git_guess_service();
+	return;
+}
 
+struct git_ticket_config 
+*git_parseConfig(int doVerify) {
+	struct git_ticket_config *config = (struct git_ticket_config*)malloc(sizeof(struct git_ticket_config));
+
+	get_config(&config->name, "ticket.name", "user.name");
+	get_config(&config->repo, "ticket.repo", NULL);
+	get_config(&config->service, "ticket.service", NULL);
 	const char *httpssl;
-	git_config_get_string(&httpssl, local_cfg, "ticket.ssl");
-
-	if (httpssl)
+	get_config(&httpssl, "ticket.ssl", NULL);
+	if (httpssl) 
 		config->ssl = strcmp(httpssl, "true") == 0;
+	get_config(&config->format_list, "ticket.format.list", NULL);
+	get_config(&config->format_show, "ticket.format.show", NULL);
+	get_config(&config->format_comment, "ticket.format.comment", NULL);
+	get_config(&config->gtoken, "ticket.github.token", NULL);
+	get_config(&config->btoken, "ticket.bitbucket.token", NULL);
+	get_config(&config->btoken_secret, "ticket.bitbucket.token-secret", NULL);
+	get_config(&config->rurl, "ticket.redmine.url", NULL);
+	get_config(&config->rpassword, "ticket.redmine.password", NULL);
+	get_config(&config->rtoken, "ticket.redmine.token", NULL);
 
-	git_config_get_string(&config->format_list, local_cfg, "ticket.format.list");
-	git_config_get_string(&config->format_show, local_cfg, "ticket.format.show");
-	git_config_get_string(&config->format_comment, local_cfg, "ticket.format.comment");
-	git_config_get_string(&config->gtoken, local_cfg, "ticket.github.token");
-	git_config_get_string(&config->btoken, local_cfg, "ticket.bitbucket.token");
-	git_config_get_string(&config->btoken_secret, local_cfg, "ticket.bitbucket.token-secret");
-	git_config_get_string(&config->rurl, local_cfg, "ticket.redmine.url");
-	git_config_get_string(&config->rpassword, local_cfg, "ticket.redmine.password");
-	git_config_get_string(&config->rtoken, local_cfg, "ticket.redmine.token");
 
 	if (doVerify)
 	{
@@ -173,7 +181,7 @@ struct git_ticket_config *git_parseConfig(int doVerify) {
 			exit(1);
 		}
 
-		if (config->name == NULL) {
+		if (config->name == NULL || strcmp(config->name, "") == 0) {
 			printf("You must set your account name to ticket.name or user.name. Try 'git config ticket.name <your_account_name>'\n");
 			exit(1);
 		}
@@ -195,21 +203,12 @@ int isurl(char *url) {
 
 char *git_guess_repo_name() {
 	const char *origin_url;
-	const char *repo_path = git_dir();
-	char config_path[256];
-	git_config *local_cfg;
-	git_config *default_cfg;
 
-	sprintf(config_path, "%s/config", repo_path);
-
-	check_error(git_config_open_ondisk(&local_cfg, config_path), "opening local config file");
-	check_error(git_config_open_default(&default_cfg), "opening default config file");
-
-	git_config_get_string(&origin_url, local_cfg, "remote.origin.url");
+	get_config(&origin_url, "remote.origin.url", NULL);
 
 	if (!origin_url)
 		return NULL;
-printf("\n\n\nHere\n\n\n");
+
 	char *url = (char*)malloc(sizeof(char) * (strlen(origin_url) + 1));
 
 	strcpy(url, origin_url);
@@ -220,19 +219,27 @@ printf("\n\n\nHere\n\n\n");
 	char *repo_name = NULL;
 	char *temp_name = strtok(url, "/");
 
-	while ((temp_name = strtok(NULL, "/")) != NULL) 
-		repo_name = temp_name;
+	while ((temp_name = strtok(NULL, "/")) != NULL) {
+		free(repo_name);
+		repo_name = (char*)malloc(sizeof(char) * (strlen(temp_name) + 1));
+		strcpy(repo_name, temp_name);
+	}
 
 	if (repo_name != NULL){
 		free(url);
+		free(temp_name);
 		return repo_name;
 	}
 
 	temp_name = strtok(url, ":");
 
-	while ((temp_name = strtok(NULL, ":")) != NULL) 
-		repo_name = temp_name;
+	while ((temp_name = strtok(NULL, ":")) != NULL) {
+		free(repo_name);
+		repo_name = (char*)malloc(sizeof(char) * (strlen(temp_name) + 1));
+		strcpy(repo_name, temp_name);
+	}
 
+	free(temp_name);
 	free(url);
 
 	return repo_name;
@@ -240,17 +247,8 @@ printf("\n\n\nHere\n\n\n");
 
 char *git_guess_service() {
 	const char *origin_url;
-	const char *repo_path = git_dir();
-	char config_path[256];
-	git_config *local_cfg;
-	git_config *default_cfg;
 
-	sprintf(config_path, "%s/config", repo_path);
-
-	check_error(git_config_open_ondisk(&local_cfg, config_path), "opening local config file");
-	check_error(git_config_open_default(&default_cfg), "opening default config file");
-
-	git_config_get_string(&origin_url, local_cfg, "remote.origin.url");
+	get_config(&origin_url, "remote.origin.url", NULL);
 
 	char *url = (char*)malloc(sizeof(char) * (strlen(origin_url) + 1));
 
@@ -259,13 +257,13 @@ char *git_guess_service() {
 	if (!url) 
 		return NULL;
 
-	char *github = (char*)malloc(sizeof(char) * 7);
+	char *github = (char*)malloc(sizeof(char) * (strlen("github") + 1));
 	strcpy(github, "github");
 
-	char *bitbucket = (char*)malloc(sizeof(char) * 10);
+	char *bitbucket = (char*)malloc(sizeof(char) * (strlen("bitbucket") + 1));
 	strcpy(bitbucket, "bitbucket");
 
-	char *redmine = (char*)malloc(sizeof(char) * 8);
+	char *redmine = (char*)malloc(sizeof(char) * (strlen("redmine") + 1));
 	strcpy(redmine, "redmine");
 
 	char *value = NULL;
@@ -293,7 +291,7 @@ char *git_guess_service() {
 	}
 
 	strcpy(url, origin_url);
-
+	
 	value = strtok(url, "@");
 	while ((value = strtok(NULL, "@")) != NULL) {
 		if (strstr(value, "mcs.redmine") != NULL) {
