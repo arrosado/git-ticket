@@ -1,0 +1,69 @@
+#!/bin/bash
+
+git config --global tfs.username arosado
+git config --global tfs.password A@o270rr
+git config --global tfs.url ar3257.visualstudio.com
+
+username=$(git config tfs.username)
+password=$(git config tfs.password)
+url=$(git config tfs.url)
+collection="defaultcollection"
+project="MCS.AppInventoryTracker"
+query_folder="Shared Queries"
+query_name="My Tasks"
+
+if test "$1" = "list"; then 
+
+	# Get query id
+	query_id=$(curl -s -u $username:$password \
+		"https://$url/$collection/$project/_apis/wit/queries?\$depth=1&api-version=1.0" \
+		| jq -r ".value[] | select(.name == \"$query_folder\") | .children[] | select(.name == \"$query_name\") | .id")
+
+	# Execute query and select details for every returned result
+	curl -s -u $username:$password \
+		"https://$url/$collection/$project/_apis/wit/wiql/$query_id?api-version=1.0" \
+		| jq -r '.workItems[].url' \
+		| xargs curl -s -u $username:$password \
+		| jq '[.fields."System.WorkItemType", (.fields."System.State"), (.id|tostring), .fields."System.Title"] | join(", ")'
+
+elif test "$1" = "show"; then 
+
+	if test "$2" = ""; then 
+		echo "Please provide the work item id to look for."
+		echo "usage: git ticket show <ticket id>"
+		exit;
+	fi; 
+
+	# Get query Id
+	query_id=$(curl -s -u $username:$password \
+		"https://$url/$collection/$project/_apis/wit/queries?\$depth=1&api-version=1.0" \
+		| jq -r ".value[] | select(.name == \"$query_folder\") | .children[] | select(.name == \"$query_name\") | .id")
+
+	# Execute query and select details for the item
+	curl -s -u $username:$password \
+		"https://$url/$collection/$project/_apis/wit/wiql/$query_id?api-version=1.0" \
+		| jq -r ".workItems[] | select(.id == $2) | .url" \
+		| xargs curl -s -u $username:$password \
+		| jq '.'
+
+
+
+else
+
+	echo "In else"
+
+fi;
+
+
+#curl -X POST --header "Content-Type:application/json" --form "{ query: \"Select [System.Id], [System.Title], [System.State] From WorkItems Where [System.WorkItemType] = 'Task' AND [State] <> 'Closed' AND [State] <> 'Removed' order by [Microsoft.VSTS.Common.Priority] asc, [System.CreatedDate] desc\"}" -u arosado:A@o270rr 'https://ar3257.visualstudio.com/DefaultCollection/MCS.AppInventoryTracker/_apis/wit/wiql?$depth=1&api-version=1.0' 
+
+#curl -u arosado:A@o270rr 'https://ar3257.visualstudio.com/defaultcollection/MCS.AppInventoryTracker/_apis/wit/wiql/c643b9db-38b5-4881-b61e-c10b6ad5d937?api-version=1.0'
+
+#My Tasks = c643b9db-38b5-4881-b61e-c10b6ad5d937
+#c643b9db-38b5-4881-b61e-c10b6ad5d937
+
+
+
+# Get all queries
+#curl -u arosado:A@o270rr 'https://ar3257.visualstudio.com/DefaultCollection/MCS.AppInventoryTracker/_apis/wit/queries?$depth=1&api-version=1.0' | jq '.value'
+
